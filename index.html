@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #2c3e50, #4ca1af);
+            background-attachment: fixed;
+            background-size: 100vw 100vh;
+            background-position: center;
+            text-align: center;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        form {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+        }
+        label {
+            font-size: 20px;
+            display: block;
+            margin: 10px 0;
+            text-align: left;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        button {
+            background: #ff9800;
+            color: white;
+            font-size: 22px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+            width: 100%;
+        }
+        button:hover {
+            background: #e68900;
+        }
+        canvas {
+            display: block;
+            border: 3px solid white;
+            margin-top: 20px;
+            border-radius: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Создание меню</h1>
+    <form id="menuForm">
+        <label>Дата: <input type="text" id="date" required></label>
+        <label>День недели: <input type="text" id="weekday" required></label>
+        <label>Завтрак: <textarea id="breakfast" rows="4" required></textarea></label>
+        <label>Второй завтрак: <textarea id="secondBreakfast" rows="4" required></textarea></label>
+        <label>Обед: <textarea id="lunch" rows="4" required></textarea></label>
+        <label>Полдник: <textarea id="snack" rows="4" required></textarea></label>
+        <button type="submit">Создать меню</button>
+    </form>
+
+    <canvas id="menuCanvas" width="1365" height="2048"></canvas>
+    <button id="downloadBtn" style="display: none;">Скачать изображение</button>
+
+    <script>
+        document.getElementById("menuForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const canvas = document.getElementById("menuCanvas");
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = false;
+
+            const img = new Image();
+            img.src = "menu_template.jpg"; 
+
+            img.onload = async function() {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+
+                const arialFont = new FontFace("ArialCustom", "url(arial.ttf)");
+                const garamondFont = new FontFace("GaramondBoldItalic", "url(Garamond-BoldItalic.ttf)");
+
+                await arialFont.load();
+                await garamondFont.load();
+                document.fonts.add(arialFont);
+                document.fonts.add(garamondFont);
+
+                function drawMultilineText(text, x, y, fontSize, fontFamily, lineHeight, centered = false) {
+                    ctx.font = `${fontSize}px ${fontFamily}`;
+                    const lines = text.split("\n"); 
+
+                    lines.forEach((line, index) => {
+                        const textWidth = ctx.measureText(line).width;
+                        ctx.fillText(line, centered ? x - textWidth / 2 : x, y + index * lineHeight);
+                    });
+                }
+
+                const data = {
+                    date: document.getElementById("date").value,
+                    weekday: document.getElementById("weekday").value,
+                    breakfast: document.getElementById("breakfast").value,
+                    secondBreakfast: document.getElementById("secondBreakfast").value,
+                    lunch: document.getElementById("lunch").value,
+                    snack: document.getElementById("snack").value
+                };
+
+                ctx.font = "48px ArialCustom";
+                ctx.fillText(data.date, 1050, 70);  
+                
+                drawMultilineText(data.weekday, 700, 470, 128, "GaramondBoldItalic", 130, true);
+                drawMultilineText(data.breakfast, 300, 550, 48, "ArialCustom", 60);
+                drawMultilineText(data.secondBreakfast, 970, 700, 48, "ArialCustom", 60, true);
+                drawMultilineText(data.lunch, 280, 950, 48, "ArialCustom", 60);
+                drawMultilineText(data.snack, 970, 1110, 48, "ArialCustom", 60, true);
+
+                document.getElementById("downloadBtn").style.display = "block";
+            };
+        });
+
+        document.getElementById("downloadBtn").addEventListener("click", function() {
+            const canvas = document.getElementById("menuCanvas");
+            const link = document.createElement("a");
+            link.download = "menu_result.jpg";
+            link.href = canvas.toDataURL("image/jpeg");
+            link.click();
+        });
+    </script>
+</body>
+</html>
+</html>
